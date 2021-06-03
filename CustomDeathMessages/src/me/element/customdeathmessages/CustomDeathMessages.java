@@ -2,6 +2,8 @@ package me.element.customdeathmessages;
 
 import java.util.HashMap;
 
+import de.bossascrew.core.base.settings.BooleanSetting;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,11 +16,18 @@ import me.element.customdeathmessages.metrics.Metrics;
 
 public class CustomDeathMessages extends JavaPlugin {
 
+	public final BooleanSetting SHOW_DEATH_MESSAGES = new BooleanSetting("show_deathmessage");
+
+	@Getter
+	private static CustomDeathMessages instance;
+
 	public HashMap<String, String> deathMessage = new HashMap<String, String>();
 
 	@Override
 	public void onEnable()
 	{
+		instance = this;
+
 		saveDefaultConfig();
 		checkVersion();
 		registerStatistics();

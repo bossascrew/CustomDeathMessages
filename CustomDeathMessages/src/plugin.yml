@@ -4,6 +4,9 @@ main: me.element.customdeathmessages.CustomDeathMessages
 description: Custom Death Messages made by Element_85
 author: Element_85
 
+depend:
+  - bossascrew-core-bukkit
+
 commands:
   cdm:
    aliases: customdeathmessages
