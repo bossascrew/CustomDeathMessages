@@ -1,14 +1,20 @@
 package me.element.customdeathmessages.listeners;
 
+import com.google.common.collect.Lists;
 import de.bossascrew.core.bukkit.player.PlayerUtils;
+import de.bossascrew.core.util.ComponentUtils;
 import me.element.customdeathmessages.CustomDeathMessages;
 import me.element.customdeathmessages.enums.VersionEnums;
 import me.element.customdeathmessages.other.DeathMessageSettings;
 import me.element.customdeathmessages.other.HexChat;
 import me.element.customdeathmessages.other.JsonChat;
 import me.element.customdeathmessages.other.MsgToJson;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,7 +23,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
 import java.util.Random;
@@ -60,10 +65,6 @@ public class PlayerDeathListener implements Listener {
                     .replace("%killer-z%", String.valueOf(killer.getLocation().getBlockZ())), plugin));
         }
 
-        if (plugin.getConfig().getBoolean("do-lightning")) {
-            playerLocation.getWorld().strikeLightningEffect(playerLocation);
-        }
-
         if (plugin.getConfig().getBoolean("enable-global-messages")) {
             if (killer instanceof Player) {
                 ItemStack killWeapon = getKillWeapon(killer);
@@ -85,19 +86,22 @@ public class PlayerDeathListener implements Listener {
                             .replace("%killer-y%", String.valueOf(killer.getLocation().getBlockY()))
                             .replace("%killer-z%", String.valueOf(killer.getLocation().getBlockZ()));
 
-                    msg = HexChat.translateHexCodes(msg, plugin);
-
-                    if (plugin.getConfig().getBoolean("developer-mode")) {
-                        Bukkit.broadcastMessage("msg test: " + msg);
-                    }
-
                     if (plugin.getConfig().getBoolean("enable-item-hover")) {
-                        broadcastMessage(victim, "");
-                        Bukkit.spigot().broadcast(new JsonChat().getTextComponent(msg, killWeapon, "kill-weapon"));
+                        String[] parts = msg.split("kill-weapon");
+                        Component message = Component.empty();
+                        for(String part : parts) {
+                            if(part.equalsIgnoreCase("kill-weapon")) {
+                                message = message.append(Component.text(weaponName).hoverEvent(HoverEvent.showItem(
+                                        HoverEvent.ShowItem.of(Key.key(killWeapon.getType().toString()), killWeapon.getAmount()))));
+                                continue;
+                            }
+                            message = message.append(ComponentUtils.translateLegacy(part));
+                        }
+                        broadcastMessage(victim, message);
                         return;
                     }
                     msg = msg.replace("%kill-weapon%", weaponName);
-                    broadcastMessage(victim, msg);
+                    broadcastMessage(victim, ComponentUtils.translateLegacy(msg));
                 } else {
                     Random rand = new Random();
                     List<String> msgs = plugin.getConfig().getStringList("melee-death-messages");
@@ -114,8 +118,7 @@ public class PlayerDeathListener implements Listener {
                             .replace("%killer-y%", String.valueOf(killer.getLocation().getBlockY()))
                             .replace("%killer-z%", String.valueOf(killer.getLocation().getBlockZ()));
 
-                    msg = HexChat.translateHexCodes(msg, plugin);
-                    broadcastMessage(victim, msg);
+                    broadcastMessage(victim, ComponentUtils.translateLegacy(msg));
                 }
             } else {
                 int versionInt = plugin.getServerVersion().getVersionInt();
@@ -190,39 +193,34 @@ public class PlayerDeathListener implements Listener {
                     msg = HexChat.translateHexCodes(msg, plugin);
                 }
                 if (plugin.getConfig().getBoolean("original-hover-message")) {
-                    String previous = event.getDeathMessage();
-                    Bukkit.spigot().broadcast((MsgToJson.translate(msg, previous)));
-                    broadcastMessage(victim, "");
+                    broadcastMessage(victim, ComponentUtils.translateLegacy(msg).hoverEvent(HoverEvent.showText(event.deathMessage())));
                 } else {
-                    broadcastMessage(victim, msg);
+                    broadcastMessage(victim, ComponentUtils.translateLegacy(msg));
                 }
             }
         }
     }
 
-    public void broadcastMessage(Player victim, String message) {
+    public void broadcastMessage(Player victim, Component message) {
         broadcastMessage(victim.getUniqueId(), message);
     }
 
-    public void broadcastMessage(UUID victim, String message) {
+    public void broadcastMessage(UUID victim, Component message) {
         if(message == null) {
-            return;
-        }
-        if(message.isEmpty()) {
             return;
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
             if(player.getUniqueId().equals(victim)) {
-                PlayerUtils.sendMessage(player, message);
-                return;
+                PlayerUtils.sendComponents(player, Lists.newArrayList(message));
+                break;
             }
 
             Boolean announce = DeathMessageSettings.SHOW_DEATH_MESSAGES.getValue(player.getUniqueId());
             if(announce == null) {
-                return;
+                break;
             }
             if (announce) {
-                PlayerUtils.sendMessage(player, message);
+                PlayerUtils.sendComponents(player, Lists.newArrayList(message));
             }
         }
     }
