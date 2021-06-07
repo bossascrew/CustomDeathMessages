@@ -7,14 +7,11 @@ import me.element.customdeathmessages.CustomDeathMessages;
 import me.element.customdeathmessages.enums.VersionEnums;
 import me.element.customdeathmessages.other.DeathMessageSettings;
 import me.element.customdeathmessages.other.HexChat;
-import me.element.customdeathmessages.other.JsonChat;
-import me.element.customdeathmessages.other.MsgToJson;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -212,13 +209,10 @@ public class PlayerDeathListener implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if(player.getUniqueId().equals(victim)) {
                 PlayerUtils.sendComponents(player, Lists.newArrayList(message));
-                break;
+                continue;
             }
 
-            Boolean announce = DeathMessageSettings.SHOW_DEATH_MESSAGES.getValue(player.getUniqueId());
-            if(announce == null) {
-                break;
-            }
+            boolean announce = DeathMessageSettings.SHOW_DEATH_MESSAGES.getValue(player.getUniqueId());
             if (announce) {
                 PlayerUtils.sendComponents(player, Lists.newArrayList(message));
             }
