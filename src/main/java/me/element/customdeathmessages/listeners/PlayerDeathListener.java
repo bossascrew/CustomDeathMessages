@@ -2,6 +2,7 @@ package me.element.customdeathmessages.listeners;
 
 import com.google.common.collect.Lists;
 import de.bossascrew.core.bukkit.player.PlayerUtils;
+import de.bossascrew.core.player.PlayerHandler;
 import de.bossascrew.core.util.ComponentUtils;
 import me.element.customdeathmessages.CustomDeathMessages;
 import me.element.customdeathmessages.enums.VersionEnums;
@@ -209,6 +210,9 @@ public class PlayerDeathListener implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if(player.getUniqueId().equals(victim)) {
                 PlayerUtils.sendComponents(player, Lists.newArrayList(message));
+                continue;
+            }
+            if(!PlayerHandler.getInstance().canSee(player.getUniqueId(), victim)) {
                 continue;
             }
 
