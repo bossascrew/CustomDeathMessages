@@ -2,7 +2,6 @@ package me.element.customdeathmessages;
 
 import java.util.HashMap;
 
-import de.bossascrew.core.base.settings.BooleanSetting;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;

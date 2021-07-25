@@ -6,5 +6,5 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DeathMessageSettings {
 
-    public final BooleanSetting SHOW_DEATH_MESSAGES = new BooleanSetting("show_deathmessage");
+    public final BooleanSetting SHOW_DEATH_MESSAGES = new BooleanSetting("chat.show_deathmessage");
 }
